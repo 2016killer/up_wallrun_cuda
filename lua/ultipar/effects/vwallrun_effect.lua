@@ -56,6 +56,10 @@ local function effectclear_default(self, ply, _, enddata)
         if VManip:GetCurrentAnim() == self.handanim and IsValid(VManip:GetVMGesture()) then
             VManip:Remove()
         end
+
+        if enddata and enddata.type == 'jump' then 
+            UltiPar.SetVecPunchVel(self.vecpunchend)
+        end
     elseif SERVER then
         timer.Remove('wallrunhfoot')
         if enddata and enddata.type == 'jump' then 
@@ -73,7 +77,8 @@ local effect, _ = UltiPar.RegisterEffect(
         label = '#default',
         sound = 'wallrun.footstep.cuda',
         soundclean = 'wallrun.cleanfootstep.cuda',
-        vecpunch = Vector(0, 0, 25)
+        vecpunch = Vector(0, 0, 25),
+        vecpunchend = Vector(50, 0, 25)
     }
 )
 effect.start = effectstart_default
