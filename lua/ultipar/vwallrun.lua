@@ -176,7 +176,7 @@ function action:Play(ply, mv, cmd, _, starttime)
     if not ply.vwr_data then 
         return 
     end
-     mv.SetVelocity(Vector())
+    mv:SetVelocity(Vector())
 
     local movedata = ply.vwr_data
     local dt = FrameTime()
