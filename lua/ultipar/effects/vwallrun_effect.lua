@@ -1,35 +1,3 @@
-sound.Add({
-	name = 'wallrun.footstep.cuda',
-	channel = CHAN_AUTO,
-	volume = 1.0,
-	level = 80,
-	pitch = {95, 110},
-	sound = {
-        'cuda/mirrorsedge/me_footstep_concretewallrun1.wav',
-        'cuda/mirrorsedge/me_footstep_concretewallrun2.wav',
-        'cuda/mirrorsedge/me_footstep_concretewallrun3.wav',
-        'cuda/mirrorsedge/me_footstep_concretewallrun4.wav',
-        'cuda/mirrorsedge/me_footstep_concretewallrun5.wav',
-        'cuda/mirrorsedge/me_footstep_concretewallrun6.wav'
-    }
-})
-
-sound.Add({
-	name = 'wallrun.cleanfootstep.cuda',
-	channel = CHAN_AUTO,
-	volume = 1.0,
-	level = 80,
-	pitch = {95, 110},
-	sound = {
-        'cuda/mirrorsedge/me_footsteps_congrete_clean_wallrun_slow_faith2.wav',
-        'cuda/mirrorsedge/me_footsteps_congrete_clean_wallrun_slow_faith2.wav',
-        'cuda/mirrorsedge/me_footsteps_congrete_clean_wallrun_slow_faith2.wav',
-        'cuda/mirrorsedge/me_footsteps_congrete_clean_wallrun_slow_faith2.wav',
-        'cuda/mirrorsedge/me_footsteps_congrete_clean_wallrun_slow_faith2.wav',
-        'cuda/mirrorsedge/me_footsteps_congrete_clean_wallrun_slow_faith2.wav'
-    }
-})
-
 local actionName = 'VWallRun'
 
 local function effectstart_default(self, ply)
@@ -89,7 +57,7 @@ UltiPar.RegisterEffectEasy(
     'SP-VManip-cuda',
     {
         handanim = 'verticalwallrun',
-        label = '#vwr.SP_VManip_cuda',
+        label = '#wr.SP_VManip_cuda',
         start = effectstart_default,
         clear = effectclear_default
     }

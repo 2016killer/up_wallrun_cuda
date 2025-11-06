@@ -2,7 +2,7 @@
 local UltiPar = UltiPar
 local convars = {
 	{
-		name = 'vwr_lifetime',
+		name = 'wr_v_lifetime',
 		default = '0.5',
 		widget = 'NumSlider',
 		min = 0,
@@ -11,14 +11,14 @@ local convars = {
 }
 
 UltiPar.CreateConVars(convars)
-local vwr_lifetime = GetConVar('vwr_lifetime')
+local wr_v_lifetime = GetConVar('wr_v_lifetime')
 local sv_gravity = GetConVar('sv_gravity')
 
 local actionName = 'VWallRun'
 local action, _ = UltiPar.Register(actionName)
 
 if CLIENT then
-	action.label = '#vwr.vwallrun'
+	action.label = '#wr.vwallrun'
 	action.icon = 'wallrun/icon.jpg'
 
 	action.CreateOptionMenu = function(panel)
@@ -51,7 +51,7 @@ end
 
 function action:Duration(ply)
     local startspeed, endspeed = self:GetSpeed(ply)
-    return (endspeed - startspeed) / self:Gravity(ply), vwr_lifetime:GetFloat()
+    return (endspeed - startspeed) / self:Gravity(ply), wr_v_lifetime:GetFloat()
 end
 
 function action:Check(ply)
@@ -157,7 +157,7 @@ function action:Start(ply, data)
 
     UltiPar.SetMoveControl(ply, true, true, IN_DUCK, 0)
 
-    ply.vwr_data = {
+    ply.wr_v_data = {
         startpos = ply:GetPos(),
         speed = startspeed,
         endspeed = endspeed,
@@ -173,12 +173,12 @@ end
 
 function action:Play(ply, mv, cmd, _, starttime)
     if CLIENT then return end
-    if not ply.vwr_data then 
+    if not ply.wr_v_data then 
         return 
     end
     mv:SetVelocity(Vector())
 
-    local movedata = ply.vwr_data
+    local movedata = ply.wr_v_data
     local dt = FrameTime()
 
     movedata.timer = (movedata.timer or 0) + dt
@@ -246,7 +246,7 @@ end
 function action:Clear(ply, _, endresult, breaker)
     if CLIENT then return end
 
-    ply.vwr_data = nil
+    ply.wr_v_data = nil
 
     if breaker and not isbool(breaker) and string.StartWith(breaker.Name, 'DParkour-') then
         return
