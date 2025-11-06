@@ -58,7 +58,7 @@ local function effectclear_default(self, ply, _, enddata)
         end
 
         if enddata and enddata.type == 'jump' then 
-            UltiPar.SetVecPunchVel(self.vecpunchend)
+            UltiPar.SetVecPunchVel(self.vecpunchjump)
         end
     elseif SERVER then
         timer.Remove('wallrunhfoot')
@@ -78,7 +78,7 @@ local effect, _ = UltiPar.RegisterEffect(
         sound = 'wallrun.footstep.cuda',
         soundclean = 'wallrun.cleanfootstep.cuda',
         vecpunch = Vector(0, 0, 25),
-        vecpunchend = Vector(50, 0, 25)
+        vecpunchjump = Vector(50, 0, 25)
     }
 )
 effect.start = effectstart_default
