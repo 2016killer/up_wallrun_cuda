@@ -231,8 +231,8 @@ function action:Play(ply, mv, cmd, _, starttime)
         local hitup = util.TraceHull({
             filter = ply, 
             mask = MASK_PLAYERSOLID,
-            start = ply:GetPos() + 2 * movedata.dir2,
-            endpos = ply:GetPos() + movedata.dir * 20 + 2 * movedata.dir2,
+            start = ply:GetPos() + 1 * movedata.dir2,
+            endpos = ply:GetPos() + movedata.dir * 20 + 1 * movedata.dir2,
             mins = bmins,
             maxs = bmaxs,
         })
