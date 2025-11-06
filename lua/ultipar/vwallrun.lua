@@ -173,9 +173,12 @@ end
 
 function action:Play(ply, mv, cmd, _, starttime)
     if CLIENT then return end
+    if not ply.vwr_data then 
+        return 
+    end
+     mv.SetVelocity(Vector())
 
     local movedata = ply.vwr_data
-    
     local dt = FrameTime()
 
     movedata.timer = (movedata.timer or 0) + dt
