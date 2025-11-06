@@ -218,7 +218,7 @@ function action:Play(ply, mv, cmd, _, starttime)
             filter = ply, 
             mask = MASK_PLAYERSOLID,
             start = ply:GetPos() + 1 * movedata.dir2,
-            endpos = ply:GetPos() + movedata.dir * 20 + 1 * movedata.dir2,
+            endpos = ply:GetPos() + movedata.dir * 50 + 1 * movedata.dir2,
             mins = bmins,
             maxs = bmaxs,
         })
