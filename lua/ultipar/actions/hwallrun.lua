@@ -60,7 +60,7 @@ end
 function action:JumpVel(ply, ref)
     local eyeXYDir = UltiPar.XYNormal(ply:EyeAngles():Forward())
     return eyeXYDir * math.max(
-        eyeXYDir:Dot(ref),
+        ref:Length(),
         (ply:GetWalkSpeed() + ply:GetRunSpeed()) * 0.5
     ) + ply:GetJumpPower() * Vector(0, 0, 1.25)
 end
