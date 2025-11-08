@@ -21,7 +21,7 @@ end
 
 local function effectclear_default(self, ply, endtype)
     if CLIENT then 
-        if endtype and VManip:GetCurrentAnim() == self.handanim and IsValid(VManip:GetVMGesture()) then
+        if not endtype and VManip:GetCurrentAnim() == self.handanim and IsValid(VManip:GetVMGesture()) then
             VManip:Remove()
         end
 
