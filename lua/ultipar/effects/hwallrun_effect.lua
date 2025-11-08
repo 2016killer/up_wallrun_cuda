@@ -52,16 +52,15 @@ if CLIENT then
     end)
 end
 
-local function effectstart_default(self, ply, data)
+local function effectstart_default(self, ply, isright)
     if SERVER then
         ply:EmitSound(self.sound)
         timer.Create('wallrunhfoot', 0.205, 30, function() ply:EmitSound(self.sound) end)
     elseif CLIENT then
-        if data and data[1] then
-            local offset = data[1] * self.rolloffset
-            if offset ~= math.huge and offset ~= -math.huge then
-                rolloffset = offset
-            end
+        isright = isright or 1
+        local offset = isright * self.rolloffset
+        if offset ~= math.huge and offset ~= -math.huge then
+            rolloffset = offset
         end
 
         VManip:PlayAnim(self.handanim)
@@ -69,19 +68,19 @@ local function effectstart_default(self, ply, data)
     end
 end
 
-local function effectclear_default(self, ply, _, enddata)
+local function effectclear_default(self, ply, endtype)
     if CLIENT then 
         rolloffset = 0
         if VManip:GetCurrentAnim() == self.handanim and IsValid(VManip:GetVMGesture()) then
             VManip:Remove()
         end
 
-        if enddata and enddata.type == 'jump' then 
+        if endtype == 'jump' then 
             UltiPar.SetVecPunchVel(self.vecpunchjump)
         end
     elseif SERVER then
         timer.Remove('wallrunhfoot')
-        if enddata and enddata.type == 'jump' then 
+        if endtype == 'jump' then 
             -- 跳跃结束时播放音效
             ply:EmitSound(self.soundclean)
         end

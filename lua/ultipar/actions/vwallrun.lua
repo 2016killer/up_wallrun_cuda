@@ -8,11 +8,43 @@ local convars = {
 		min = 0,
 		max = 2
 	},
+
+	{
+		name = 'wr_v_dietime',
+		default = '1',
+		widget = 'NumSlider',
+		min = 1,
+		max = 5,
+        decimals = 0,
+        help = true
+	},
+
+	{
+		name = 'wr_v_diespeed',
+		default = '600',
+		widget = 'NumSlider',
+		min = 10,
+		max = 1000,
+        decimals = 0,
+        help = true
+	},
+
+    {
+		name = 'wr_v_gravity',
+		default = '420',
+		widget = 'NumSlider',
+		min = 10,
+		max = 1000,
+        decimals = 0,
+        help = true
+	},
 }
 
 UltiPar.CreateConVars(convars)
 local wr_v_lifetime = GetConVar('wr_v_lifetime')
-local sv_gravity = GetConVar('sv_gravity')
+local wr_v_gravity = GetConVar('wr_v_gravity')
+local wr_v_dietime = GetConVar('wr_v_dietime')
+local wr_v_diespeed = GetConVar('wr_v_diespeed')
 
 local actionName = 'VWallRun'
 local action, _ = UltiPar.Register(actionName)
@@ -28,13 +60,13 @@ else
 	convars = nil
 end
 ----------------------------------动作逻辑
-action.Interrupts['DParkour-LowClimb'] = true
-action.Interrupts['DParkour-HighClimb'] = true
-
-
 function action:JumpVel(ply)
     return UltiPar.XYNormal(ply:EyeAngles():Forward()) * (ply:GetWalkSpeed() + ply:GetRunSpeed()) * 0.5 +
     ply:GetJumpPower() * Vector(0, 0, 1)
+end
+
+function action:GetDieTime(ply)
+    return wr_v_dietime:GetFloat()
 end
 
 function action:GetSpeed(ply)
@@ -42,7 +74,7 @@ function action:GetSpeed(ply)
 end
 
 function action:Gravity(ply)
-    return -sv_gravity:GetFloat() * 0.7
+    return -wr_v_gravity:GetFloat()
 end
 
 function action:RunDistance(ply)
@@ -59,7 +91,7 @@ function action:Check(ply)
         return
     end
     
-    if ply:GetVelocity()[3] < -math.abs(sv_gravity:GetFloat()) then
+    if ply:GetVelocity()[3] < -math.abs(wr_v_diespeed:GetFloat()) then
         return
     end
 
@@ -70,7 +102,8 @@ function action:Check(ply)
     )
     
     if traceground.Hit then 
-        ply.LastWallForward = nil 
+        ply.LastWallForward2 = nil 
+        ply.VWallDieTime = 0
     end
 
     local bmins, bmaxs = ply:GetHull()
@@ -100,8 +133,12 @@ function action:Check(ply)
     -- sin(15°) = 0.26
     local wallForward = traceforward.HitNormal
 
-    if ply.LastWallForward and ply.LastWallForward:Dot(wallForward) > 0.64 then
-        return
+    if ply.LastWallForward2 and ply.LastWallForward2:Dot(wallForward) > 0.64 then
+        ply.VWallDieTime = (ply.VWallDieTime or 0) + 1
+
+        if ply.VWallDieTime >= wr_v_dietime:GetInt() then
+            return
+        end
     end
 
     if wallForward[3] > 0.26 or wallForward[3] < -0.26 or 
@@ -131,7 +168,7 @@ function action:Check(ply)
 
     rundis = traceup.Fraction * rundis
 
-    ply.LastWallForward = wallForward
+    ply.LastWallForward2 = wallForward
     
     local duration, lifetime = self:Duration(ply)
 
@@ -139,70 +176,59 @@ function action:Check(ply)
         return
     end
 
-    return {
-        traceup.HitPos, 
-        rundis, 
-        wallForward, 
+
+
+    return ply:GetPos(),
         wallUp,
         duration,
-        lifetime
-    }
+        lifetime,
+        wallForward,
+        CurTime()
 end
 
-function action:Start(ply, data)
+function action:Start(ply)
     if CLIENT then return end
-    local startpos, rundis, wallForward, wallUp, duration, lifetime = unpack(data)
-    local startspeed, endspeed = self:GetSpeed(ply)
-    local acc = self:Gravity(ply)
-
-    UltiPar.SetMoveControl(ply, true, true, IN_DUCK, 0)
-
-    ply.wr_v_data = {
-        startpos = ply:GetPos(),
-        speed = startspeed,
-        endspeed = endspeed,
-        acc = acc,
-        dir = wallUp,
-        duration = duration,
-        lifetime = lifetime,
-        dir2 = wallForward,
-    }
-
-    return {duration, lifetime}
+    UltiPar.WriteMoveControl(ply, true, true, IN_DUCK, 0)
 end
 
-function action:Play(ply, mv, cmd, _, starttime)
-    if CLIENT then return end
-    if not ply.wr_v_data then 
-        return 
-    end
+function action:Play(ply, mv, cmd,
+        startpos,
+        dir,
+        duration,
+        lifetime,
+        dir2,
+        starttime
+    )
+
     mv:SetVelocity(Vector())
 
-    local movedata = ply.wr_v_data
+    local startspeed, endspeed = self:GetSpeed(ply)
+    local acc = self:Gravity(ply)
     local dt = FrameTime()
 
-    movedata.timer = (movedata.timer or 0) + dt
-    local target = movedata.target or 0
+    ply.wr_v_timer = (ply.wr_v_timer or 0) + dt
+    local target = ply.wr_v_target or 0
+    local speed = ply.wr_v_speed or startspeed
 
-    if movedata.timer < movedata.duration + movedata.lifetime then 
-        if (movedata.acc < 0 and movedata.speed < movedata.endspeed) or (movedata.acc > 0 and movedata.speed > movedata.endspeed) then
-            target = target + movedata.endspeed * dt
+    if ply.wr_v_timer < duration + lifetime then 
+        if (acc < 0 and speed < endspeed) or (acc > 0 and speed > endspeed) then
+            target = target + endspeed * dt
         else
-            target = target + movedata.speed * dt
+            target = target + speed * dt
         end
 
         mv:SetOrigin(
             LerpVector(
-                math.Clamp(movedata.timer / 0.1, 0, 1), 
+                math.Clamp(ply.wr_v_timer / 0.1, 0, 1), 
                 ply:GetPos(), 
-                movedata.startpos + target * movedata.dir
+                startpos + target * dir
             )
         ) 
         
-        movedata.target = target
-        movedata.speed = dt * movedata.acc + movedata.speed
+        ply.wr_v_target = target
+        ply.wr_v_speed = dt * acc + speed
     else
-        return {type = 'normal', mv = mv}
+        return 'normal'
     end
 
 
@@ -210,67 +236,85 @@ function action:Play(ply, mv, cmd, _, starttime)
     
     -- 检测跳跃键
     local keydown_injump = ply:KeyDown(IN_JUMP)
-    if curtime - starttime > 0.3 and movedata.keydown_injump == false and keydown_injump then
-        return {type = 'jump', mv = mv}
+    if curtime - starttime > 0.3 and ply.wr_v_keydown_injump == false and keydown_injump then
+        return 'jump'
     end
-    movedata.keydown_injump = keydown_injump
+    ply.wr_v_keydown_injump = keydown_injump
 
-    if curtime - (movedata.lasttime or 0) > 0.1 then
-        if math.abs(movedata.speed) < 150 then
+    if curtime - (ply.wr_v_lasttime or 0) > 0.1 then
+        if math.abs(ply.wr_v_speed) < 150 then
             timer.Remove('wallrunhfoot')
         end
 
-        movedata.lasttime = curtime
+        ply.wr_v_lasttime = curtime
         local bmins, bmaxs = ply:GetHull()
 
-        local hitforward = util.QuickTrace(ply:EyePos(), -movedata.dir2 * bmaxs[1] * 2, ply)
+        local hitforward = util.QuickTrace(ply:EyePos(), -dir2 * bmaxs[1] * 2, ply)
         if not hitforward.Hit then
-            return {type = 'hit', mv = mv}
+            return 'hit'
         end
 
         local hitup = util.TraceHull({
             filter = ply, 
             mask = MASK_PLAYERSOLID,
-            start = ply:GetPos() + 1 * movedata.dir2,
-            endpos = ply:GetPos() + movedata.dir * 20 + 1 * movedata.dir2,
+            start = ply:GetPos() + 1 * dir2,
+            endpos = ply:GetPos() + dir * 20 + 1 * dir2,
             mins = bmins,
             maxs = bmaxs,
         })
 
         if hitup.Hit or hitup.StartSolid then
-            return {type = 'hit', mv = mv}
+            return 'hit'
         end
     end
 end
 
-function action:Clear(ply, _, endresult, breaker)
+action.Interrupts['DParkour-LowClimb'] = true
+action.Interrupts['DParkour-HighClimb'] = true
+
+action.InterruptsFunc['DParkour-LowClimb'] = function(ply, self, ...)
+    self:Clear(ply)
+    local effect = UltiPar.GetPlayerCurrentEffect(ply, self)
+    if effect then
+        effect:clear(ply)
+    end
+
+    return true
+end
+
+action.InterruptsFunc['DParkour-HighClimb'] = function(ply, self, ...)
+    self:Clear(ply)
+    local effect = UltiPar.GetPlayerCurrentEffect(ply, self)
+    if effect then
+        effect:clear(ply)
+    end
+
+    return true
+end
+
+function action:Clear(ply, mv, cmd, endtype)
     if CLIENT then return end
 
-    ply.wr_v_data = nil
+    ply.wr_v_timer = nil
+    ply.wr_v_target = nil
+    ply.wr_v_speed = nil
+    ply.wr_v_keydown_injump = nil
+    ply.wr_v_lasttime = nil
 
-    if breaker and not isbool(breaker) and string.StartWith(breaker.Name, 'DParkour-') then
-        return
-    end
-    
-    UltiPar.SetMoveControl(ply, false, false, 0, 0)
-    
-    if endresult then 
-        if endresult.type == 'jump' then
-            endresult.mv:SetVelocity(self:JumpVel(ply)) 
-            endresult.mv = nil
-        else
-            endresult.mv:SetVelocity(UltiPar.unitzvec) 
-            endresult.mv = nil
-        end
+    if endtype == 'jump' then
+        mv:SetVelocity(self:JumpVel(ply)) 
+    elseif endtype then
+        mv:SetVelocity(UltiPar.unitzvec) 
     end
 end
 
-hook.Add('OnPlayerHitGround', 'wallrun.reset', function(ply, key)
-    ply.LastWallForward = nil
+hook.Add('OnPlayerHitGround', 'vwallrun.reset', function(ply, key)
+    ply.LastWallForward2 = nil
+    ply.VWallDieTime = 0
 end)
 
 if SERVER then
-    hook.Add('KeyPress', 'wallrun.trigger', function(ply, key)
+    hook.Add('KeyPress', 'vwallrun.trigger', function(ply, key)
         if key == IN_JUMP then UltiPar.Trigger(ply, action) end
     end)
 end

@@ -19,18 +19,18 @@ local function effectstart_default(self, ply)
     end
 end
 
-local function effectclear_default(self, ply, _, enddata)
+local function effectclear_default(self, ply, endtype)
     if CLIENT then 
-        if VManip:GetCurrentAnim() == self.handanim and IsValid(VManip:GetVMGesture()) then
+        if endtype and VManip:GetCurrentAnim() == self.handanim and IsValid(VManip:GetVMGesture()) then
             VManip:Remove()
         end
 
-        if enddata and enddata.type == 'jump' then 
+        if endtype == 'jump' then 
             UltiPar.SetVecPunchVel(self.vecpunchjump)
         end
     elseif SERVER then
         timer.Remove('wallrunhfoot')
-        if enddata and enddata.type == 'jump' then 
+        if endtype == 'jump' then 
             -- 跳跃结束时播放音效
             ply:EmitSound(self.soundclean)
         end
