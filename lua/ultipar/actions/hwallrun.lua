@@ -131,7 +131,8 @@ function action:Check(ply)
     local loscosRight = UltiPar.XYNormal(ply:EyeAngles():Forward()):Dot(wallRight)
     local loscosForward = UltiPar.XYNormal(ply:EyeAngles():Forward()):Dot(UltiPar.XYNormal(wallForward))
 
-
+    local isright = (loscosRight > 0 and 1 or -1)
+    local rundir = isright * wallRight
 
     if ply.LastWallForward and ply.LastWallForward:Dot(wallForward) > 0.64 then
         ply.HWallDieTime = (ply.HWallDieTime or 0) + 1
@@ -140,7 +141,6 @@ function action:Check(ply)
             return
         end
     end
-
 
 
     if wr_h_mustlookatwall:GetBool() and ply:GetEyeTrace().HitNormal:Dot(wallForward) < 0.07 then
@@ -154,7 +154,7 @@ function action:Check(ply)
         filter = ply, 
         mask = MASK_PLAYERSOLID,
         start = ply:GetPos() + 2 * wallForward,
-        endpos = ply:GetPos() + (traceground.Hit and 25 or 0) * wallUp + 2 * wallForward,
+        endpos = ply:GetPos() + (traceground.Hit and 25 or 0) * wallUp + 2 * wallForward + rundir * 25,
         mins = bmins,
         maxs = bmaxs,
     })
@@ -167,8 +167,8 @@ function action:Check(ply)
     ply.LastWallForward = wallForward
     
     local duration = self:Duration(ply)
-    local isright = (loscosRight > 0 and 1 or -1)
-    local rundir = isright * wallRight
+    
+    
     local startspeed, endspeed = self:GetSpeed(ply, ply:GetVelocity(), rundir)
  
     return isright,

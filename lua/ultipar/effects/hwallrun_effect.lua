@@ -71,7 +71,6 @@ end
 local function effectclear_default(self, ply, endtype)
     if CLIENT then 
         rolloffset = 0
-        print('fuck')
         if not endtype and VManip:GetCurrentAnim() == self.handanim and IsValid(VManip:GetVMGesture()) then
             VManip:Remove()
         end
