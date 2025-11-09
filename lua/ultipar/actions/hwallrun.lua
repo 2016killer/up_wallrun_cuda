@@ -3,7 +3,7 @@ local UltiPar = UltiPar
 local convars = {
 	{
 		name = 'wr_h_mustlookatwall',
-		default = '0',
+		default = '1',
 		widget = 'CheckBox'
 	},
 
@@ -143,7 +143,7 @@ function action:Check(ply)
     end
 
 
-    if wr_h_mustlookatwall:GetBool() and ply:GetEyeTrace().HitNormal:Dot(wallForward) < 0.07 then
+    if wr_h_mustlookatwall:GetBool() and ply:GetEyeTrace().Normal:Dot(wallForward) > 0 then
         return 
     elseif -loscosForward > 0.5 then
         return 
