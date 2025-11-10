@@ -169,13 +169,12 @@ function action:Check(ply)
     rundis = traceup.Fraction * rundis
 
     ply.LastWallForward2 = wallForward
-    
+    ply.LastWallForward = wallForward
     local duration, lifetime = self:Duration(ply)
 
     if duration < 0 or duration == math.huge or duration == -math.huge then
         return
     end
-
 
 
     return ply:GetPos(),

@@ -165,7 +165,7 @@ function action:Check(ply)
 
  
     ply.LastWallForward = wallForward
-    
+    ply.LastWallForward2 = wallForward
     local duration = self:Duration(ply)
     
     
