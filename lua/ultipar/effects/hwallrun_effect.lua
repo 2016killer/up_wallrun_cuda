@@ -105,7 +105,7 @@ effect.clear = effectclear_default
 
 UltiPar.RegisterEffectEasy(
     actionName, 
-    'SP-VManip-cuda',
+    'SP-VManip-YongLi',
     {
         handanim = 'horizontalwallrun_YongLi',
         label = '#wr.SP_VManip_YongLi',
@@ -113,6 +113,18 @@ UltiPar.RegisterEffectEasy(
         clear = effectclear_default
     }
 )
+
+UltiPar.RegisterEffectEasy(
+    actionName, 
+    'SP-VManip-cuda',
+    {
+        handanim = '',
+        label = '#wr.SP_VManip_cuda',
+        start = effectstart_default,
+        clear = effectclear_default
+    }
+)
+
 
 effectstart_default = nil
 effectclear_default = nil
