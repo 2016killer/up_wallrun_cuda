@@ -50,7 +50,6 @@ local actionName = 'VWallRun'
 local action, _ = UltiPar.Register(actionName)
 
 if CLIENT then
-	action.label = '#wr.vwallrun'
 	action.icon = 'wallrun/icon.jpg'
 
 	action.CreateOptionMenu = function(panel)
@@ -242,7 +241,7 @@ function action:Play(ply, mv, cmd,
 
     if curtime - (ply.wr_v_lasttime or 0) > 0.1 then
         if math.abs(ply.wr_v_speed) < 150 then
-            timer.Remove('wallrunhfoot')
+            timer.Remove('wallrunhfoot_' .. ply:EntIndex())
         end
 
         ply.wr_v_lasttime = curtime
@@ -274,9 +273,7 @@ action.Interrupts['DParkour-HighClimb'] = true
 action.InterruptsFunc['DParkour-LowClimb'] = function(ply, self, ...)
     self:Clear(ply)
     local effect = UltiPar.GetPlayerCurrentEffect(ply, self)
-    if effect then
-        effect:clear(ply)
-    end
+    if effect then effect:clear(ply) end
 
     return true
 end
@@ -284,9 +281,7 @@ end
 action.InterruptsFunc['DParkour-HighClimb'] = function(ply, self, ...)
     self:Clear(ply)
     local effect = UltiPar.GetPlayerCurrentEffect(ply, self)
-    if effect then
-        effect:clear(ply)
-    end
+    if effect then effect:clear(ply) end
 
     return true
 end
@@ -299,6 +294,8 @@ function action:Clear(ply, mv, cmd, endtype)
     ply.wr_v_speed = nil
     ply.wr_v_keydown_injump = nil
     ply.wr_v_lasttime = nil
+
+    if not mv then return end
 
     if endtype == 'jump' then
         mv:SetVelocity(self:JumpVel(ply)) 

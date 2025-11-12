@@ -47,7 +47,6 @@ local actionName = 'HWallRun'
 local action, _ = UltiPar.Register(actionName)
 
 if CLIENT then
-	action.label = '#wr.hwallrun'
 	action.icon = 'wallrun/icon.jpg'
 
 	action.CreateOptionMenu = function(panel)
@@ -262,6 +261,8 @@ function action:Clear(ply, mv, cmd, endtype)
     ply.wr_h_speed = nil
     ply.wr_h_keydown_injump = nil
     ply.wr_h_lasttime = nil
+    
+    if not mv then return end
 
     if endtype == 'jump' then
         mv:SetVelocity(self:JumpVel(ply, ply:GetVelocity())) 
